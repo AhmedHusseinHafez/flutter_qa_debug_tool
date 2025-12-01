@@ -28,6 +28,16 @@ dependencies:
       ref: v1.0.0
 ```
 
+If you use SSH instead of HTTPS:
+
+```yaml
+dependencies:
+  flutter_qa_debug_tool:
+    git:
+      url: git@company:esnadtech/flutter_qa_debug_tool.git
+      ref: v1.0.0
+```
+
 ### 2. Use a local path (for local development)
 
 ```yaml
