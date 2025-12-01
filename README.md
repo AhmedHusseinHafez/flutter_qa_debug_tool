@@ -14,14 +14,14 @@ A Flutter package for debugging network requests and responses made with Dio. Th
 
 ## Installation
 
-Add one of the following to your package's `pubspec.yaml` file:
+Add one of the following to your package's `pubspec.yaml` file under `dev_dependencies` (since this is a debugging/QA tool):
 
 ### 1. Use the tagged GitHub release (`v1.0.0`)
 
 This uses the **`v1.0.0`** tag you just created:
 
 ```yaml
-dependencies:
+dev_dependencies:
   flutter_qa_debug_tool:
     git:
       url: https://github.com/esnadtech/flutter_qa_debug_tool.git
@@ -31,7 +31,7 @@ dependencies:
 If you use SSH instead of HTTPS:
 
 ```yaml
-dependencies:
+dev_dependencies:
   flutter_qa_debug_tool:
     git:
       url: git@company:esnadtech/flutter_qa_debug_tool.git
@@ -41,7 +41,7 @@ dependencies:
 ### 2. Use a local path (for local development)
 
 ```yaml
-dependencies:
+dev_dependencies:
   flutter_qa_debug_tool:
     path: ../packages/flutter_qa_debug_tool
 ```
@@ -49,7 +49,7 @@ dependencies:
 ### 3. Use pub.dev (when published)
 
 ```yaml
-dependencies:
+dev_dependencies:
   flutter_qa_debug_tool: ^1.0.0
 ```
 
