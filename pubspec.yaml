@@ -1,7 +1,7 @@
 name: flutter_qa_debug_tool
 description: A Flutter package for debugging network requests and responses with Dio. Includes a beautiful UI for viewing logs with search, filtering, and JSON tree viewing.
 version: 1.0.0
-homepage: https://github.com/esnadtech/flutter_qa_debug_tool.git
+homepage: https://github.com/AhmedHusseinHafez/flutter_qa_debug_tool.git
 
 environment:
   sdk: ^3.9.2

@@ -24,17 +24,7 @@ This uses the **`v1.0.0`** tag you just created:
 dev_dependencies:
   flutter_qa_debug_tool:
     git:
-      url: https://github.com/esnadtech/flutter_qa_debug_tool.git
-      ref: v1.0.0
-```
-
-If you use SSH instead of HTTPS:
-
-```yaml
-dev_dependencies:
-  flutter_qa_debug_tool:
-    git:
-      url: git@company:esnadtech/flutter_qa_debug_tool.git
+      url: https://github.com/AhmedHusseinHafez/flutter_qa_debug_tool.git
       ref: v1.0.0
 ```
 
