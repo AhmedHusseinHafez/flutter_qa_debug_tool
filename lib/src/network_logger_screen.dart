@@ -14,7 +14,7 @@ class NetworkLoggerScreen extends StatefulWidget {
 
 class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
   static const int _maxPreviewChars = 12000;
-  static const String _packageVersion = '1.1.0';
+  static const String _packageVersion = '1.1.1';
 
   final List<String> logs = [];
   List<String> filteredLogs = [];
