@@ -5,6 +5,15 @@ class ScreenLoggerInterceptor extends Interceptor {
   ScreenLoggerInterceptor({required this.onLog});
   final void Function(String) onLog;
 
+  static const int _maxPayloadLength = 20000;
+
+  String _truncate(String value) {
+    if (value.length <= _maxPayloadLength) return value;
+    final truncated = value.substring(0, _maxPayloadLength);
+    final skipped = value.length - _maxPayloadLength;
+    return '$truncated\n... [truncated $skipped chars]';
+  }
+
   String _formatData(dynamic data) {
     if (data == null) return 'null';
     try {
@@ -12,25 +21,25 @@ class ScreenLoggerInterceptor extends Interceptor {
       if (data is FormData) {
         return _formatFormData(data);
       }
-      // Try to encode as JSON if it's a Map or List
+      // Encode as compact JSON for Map/List to reduce size
       if (data is Map || data is List) {
-        const encoder = JsonEncoder.withIndent('  ');
-        return encoder.convert(data);
+        final encoded = json.encode(data);
+        return _truncate(encoded);
       }
       // If it's already a string, try to parse and re-encode for pretty printing
       if (data is String) {
         try {
           final parsed = json.decode(data);
-          const encoder = JsonEncoder.withIndent('  ');
-          return encoder.convert(parsed);
+          final encoded = json.encode(parsed);
+          return _truncate(encoded);
         } catch (_) {
           // Not JSON, return as is
-          return data;
+          return _truncate(data);
         }
       }
-      return data.toString();
+      return _truncate(data.toString());
     } catch (_) {
-      return data.toString();
+      return _truncate(data.toString());
     }
   }
 

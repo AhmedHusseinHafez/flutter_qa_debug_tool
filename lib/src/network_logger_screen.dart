@@ -13,6 +13,8 @@ class NetworkLoggerScreen extends StatefulWidget {
 }
 
 class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
+  static const int _maxPreviewChars = 12000;
+
   final List<String> logs = [];
   List<String> filteredLogs = [];
   final TextEditingController searchCtrl = TextEditingController();
@@ -277,7 +279,9 @@ class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
     }
 
     final prettyHeaders = _tryPrettyHeaders(headersRaw);
-    final pretty = _tryPretty(bodyRaw);
+    final isLargePayload = _isLargePayload(bodyRaw);
+    final truncatedBody = _truncateForPreview(bodyRaw);
+    final pretty = _tryPretty(truncatedBody);
     final hasHeaders = headersRaw.isNotEmpty;
 
     return Container(
@@ -360,11 +364,19 @@ class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
               ],
             ),
             const SizedBox(height: 6),
-            _buildJsonViewer(pretty, bodyRaw),
+            _buildJsonViewer(pretty, truncatedBody, isLargePayload),
           ],
         ],
       ),
     );
+  }
+
+  bool _isLargePayload(String raw) => raw.length > _maxPreviewChars;
+
+  String _truncateForPreview(String raw) {
+    if (raw.length <= _maxPreviewChars) return raw;
+    final skipped = raw.length - _maxPreviewChars;
+    return '${raw.substring(0, _maxPreviewChars)}\n... [truncated $skipped chars for preview]';
   }
 
   String _tryPrettyHeaders(String raw) {
@@ -424,10 +436,19 @@ class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
     }
   }
 
-  Widget _buildJsonViewer(String prettyJson, String rawData) {
+  Widget _buildJsonViewer(
+    String prettyJson,
+    String rawData,
+    bool wasTruncated,
+  ) {
     // Check if it's FormData format
     if (rawData.startsWith('FormData {')) {
       return _buildFormDataViewer(rawData);
+    }
+
+    // Avoid heavy parsing for very large payloads; show safe preview instead.
+    if (wasTruncated) {
+      return _buildLargePayloadPreview(rawData);
     }
 
     // First, try to parse as JSON
@@ -455,6 +476,37 @@ class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
       }
     }
   }
+
+  Widget _buildLargePayloadPreview(String data) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade900,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: const Text(
+          'Large payload previewed (truncated for stability). Use copy to inspect full data.',
+          style: TextStyle(
+            fontFamily: 'monospace',
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+      const SizedBox(height: 6),
+      SelectableText(
+        data,
+        textAlign: TextAlign.left,
+        style: const TextStyle(
+          fontFamily: 'monospace',
+          color: Colors.white,
+          fontSize: 13,
+        ),
+      ),
+    ],
+  );
 
   String _convertDartMapToJson(String dartMapString) {
     // Convert Dart Map format {key: value} to JSON format {"key": "value"}

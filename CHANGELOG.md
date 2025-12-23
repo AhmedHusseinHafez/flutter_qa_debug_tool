@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2025-12-23
+### Changed
+- Added log buffer caps and payload truncation to prevent freezes/crashes with very large responses.
+- Safer UI rendering with truncated previews for oversized payloads.
+- Compact logging to reduce memory and CPU usage while preserving copy/export.
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added

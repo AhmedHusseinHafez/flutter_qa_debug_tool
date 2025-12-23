@@ -11,21 +11,22 @@ A Flutter package for debugging network requests and responses made with Dio. Th
 - 📋 **Copy to clipboard** for easy sharing
 - 🎨 **Color-coded logs** (blue for requests, green for responses, red for errors)
 - 📱 **Beautiful UI** with Material Design
+- 🛡️ **Safe with large payloads** – responses are truncated and capped to avoid UI freezes/crashes
 
 ## Installation
 
 Add one of the following to your package's `pubspec.yaml` file under `dev_dependencies` (since this is a debugging/QA tool):
 
-### 1. Use the tagged GitHub release (`v1.0.0`)
+### 1. Use the tagged GitHub release (`v1.1.0`)
 
-This uses the **`v1.0.0`** tag you just created:
+This uses the **`v1.1.0`** tag:
 
 ```yaml
 dev_dependencies:
   flutter_qa_debug_tool:
     git:
       url: https://github.com/AhmedHusseinHafez/flutter_qa_debug_tool.git
-      ref: v1.0.0
+      ref: v1.1.0
 ```
 
 ### 2. Use a local path (for local development)
@@ -40,7 +41,7 @@ dev_dependencies:
 
 ```yaml
 dev_dependencies:
-  flutter_qa_debug_tool: ^1.0.0
+  flutter_qa_debug_tool: ^1.1.0
 ```
 
 Then run:
@@ -100,6 +101,13 @@ Attaches the network logger interceptor to a Dio instance.
 **Parameters:**
 - `dio`: The Dio instance to attach the logger to
 - `enabled`: Whether to enable logging (default: `true`)
+
+> **Performance note (since `1.1.0`)**
+>
+> - The in‑memory log buffer keeps the **newest ~200 entries** and drops older ones automatically.
+> - Each entry (request/response/error) is capped to a **maximum number of characters**.
+> - Very large payloads are **truncated for on‑screen preview** with a clear `...[truncated]` marker, but you can still use **Copy** to inspect the full raw text that Dio produced.
+> - These safeguards are designed to **prevent freezes and crashes** when your backend returns huge JSON or binary blobs.
 
 ### `NetworkDebugger.open(BuildContext context)`
 
