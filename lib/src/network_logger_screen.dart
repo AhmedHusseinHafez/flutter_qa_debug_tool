@@ -14,6 +14,7 @@ class NetworkLoggerScreen extends StatefulWidget {
 
 class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
   static const int _maxPreviewChars = 12000;
+  static const String _packageVersion = '1.1.0';
 
   final List<String> logs = [];
   List<String> filteredLogs = [];
@@ -59,7 +60,17 @@ class _NetworkLoggerScreenState extends State<NetworkLoggerScreen> {
     child: Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Network Logs'),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Network Logs'),
+            SizedBox(height: 2),
+            Text(
+              'v$_packageVersion',
+              style: TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
