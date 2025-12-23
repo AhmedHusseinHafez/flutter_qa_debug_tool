@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class ScreenLoggerInterceptor extends Interceptor {
   ScreenLoggerInterceptor({required this.onLog});
   final void Function(String) onLog;
 
   static const int _maxPayloadLength = 20000;
+  static const int _isolateJsonThreshold = 256 * 1024; // 256 KB
 
   String _truncate(String value) {
     if (value.length <= _maxPayloadLength) return value;
@@ -14,7 +16,7 @@ class ScreenLoggerInterceptor extends Interceptor {
     return '$truncated\n... [truncated $skipped chars]';
   }
 
-  String _formatData(dynamic data) {
+  Future<String> _formatData(dynamic data) async {
     if (data == null) return 'null';
     try {
       // Handle FormData objects
@@ -23,11 +25,24 @@ class ScreenLoggerInterceptor extends Interceptor {
       }
       // Encode as compact JSON for Map/List to reduce size
       if (data is Map || data is List) {
+        final approxSize = data.toString().length;
+        if (approxSize > _isolateJsonThreshold) {
+          final encoded = await compute(_encodeJsonCompact, data);
+          return _truncate(encoded);
+        }
         final encoded = json.encode(data);
         return _truncate(encoded);
       }
       // If it's already a string, try to parse and re-encode for pretty printing
       if (data is String) {
+        if (data.length > _isolateJsonThreshold) {
+          try {
+            final encoded = await compute(_normalizeJsonString, data);
+            return _truncate(encoded);
+          } catch (_) {
+            return _truncate(data);
+          }
+        }
         try {
           final parsed = json.decode(data);
           final encoded = json.encode(parsed);
@@ -77,33 +92,47 @@ class ScreenLoggerInterceptor extends Interceptor {
   }
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    final data = await _formatData(options.data);
     final log =
-        '--> ${options.method} ${options.uri}\nHeaders: ${options.headers}\nData: ${_formatData(options.data)}';
+        '--> ${options.method} ${options.uri}\nHeaders: ${options.headers}\nData: $data';
     onLog(log);
     super.onRequest(options, handler);
   }
 
   @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
+  void onResponse(Response response, ResponseInterceptorHandler handler) async {
+    final data = await _formatData(response.data);
     final log =
-        '<-- ${response.statusCode} ${response.requestOptions.uri}\nData: ${_formatData(response.data)}';
+        '<-- ${response.statusCode} ${response.requestOptions.uri}\nData: $data';
     onLog(log);
     super.onResponse(response, handler);
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
     final status = err.response?.statusCode ?? 'NO_STATUS';
-    final data = err.response?.data ?? '';
+    final rawData = err.response?.data ?? '';
+    final data = await _formatData(rawData);
     final log =
         '''
 <-- ERROR $status ${err.requestOptions.uri}
 Type: ${err.type}
 Message: ${err.message}
-Data: ${_formatData(data)}
+Data: $data
 ''';
     onLog(log);
     super.onError(err, handler);
   }
+}
+
+// Top-level helpers for compute() to avoid blocking the UI isolate
+String _encodeJsonCompact(dynamic data) => json.encode(data);
+
+String _normalizeJsonString(String data) {
+  final parsed = json.decode(data);
+  return json.encode(parsed);
 }
